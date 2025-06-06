@@ -1,8 +1,8 @@
-Company,Date,Author,Upside (%),Tier
-BHARTIARTL,2025-05-15,ICICI Securities Limited,1.27,Tier 1
-BHARTIARTL,2025-05-15,Sharekhan,15.67,Tier 2
-BHARTIARTL,2025-05-14,Motilal Oswal,12.47,Tier 1
-BHARTIARTL,2025-05-14,Prabhudas Lilladhar,5.96,Tier 2
-INDUSTOWER,2025-05-01,ICICI Securities Limited,9.55,Tier 1
-IDEA,2025-06-02,Motilal Oswal,5.80,Tier 1
-RAILTEL,2025-05-05,ICICI Securities Limited,39.33,Tier 1
+Company,Date,Author,Upside (%),Tier,Type
+BHARTIARTL,2025-05-15,ICICI Securities Limited,1.31,Tier 1,Hold
+BHARTIARTL,2025-05-15,Sharekhan,15.70,Tier 2,Buy
+BHARTIARTL,2025-05-14,Motilal Oswal,12.50,Tier 1,Buy
+BHARTIARTL,2025-05-14,Prabhudas Lilladhar,6.00,Tier 2,Accumulate
+INDUSTOWER,2025-05-01,ICICI Securities Limited,10.28,Tier 1,Sell
+IDEA,2025-06-02,Motilal Oswal,6.20,Tier 1,Sell
+RAILTEL,2025-05-05,ICICI Securities Limited,39.43,Tier 1,Sell

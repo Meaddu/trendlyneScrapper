@@ -2,7 +2,6 @@
 
 import csv
 import time
-import os
 import sys
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
@@ -72,7 +71,7 @@ def scrape_company_reports(driver, report_url, writer):
 
     for row in rows:
         cells = row.find_all("td")
-        if len(cells) < 8:
+        if len(cells) < 9:
             continue
 
         date_str = cells[1].get("data-sort", "").strip()
@@ -86,14 +85,19 @@ def scrape_company_reports(driver, report_url, writer):
 
         author_tag = cells[3].find("a")
         author = author_tag.text.strip() if author_tag else ""
+
         upside = cells[7].text.strip()
         if upside.lower() == "target met":
-            continue  # Skip rows with "Target met" as upside
+            continue  # Skip "Target met" rows
+
+        # Extract type (Buy/Sell/Hold/etc.)
+        type_span = cells[8].select_one("span.fs085rem")
+        rating_type = type_span.text.strip() if type_span else ""
 
         normalized_author = author.lower().strip()
-
         tier = "Tier 1" if any(b.lower() in normalized_author for b in TIER_1_BROKERS) else "Tier 2"
-        writer.writerow([ticker, report_date.strftime("%Y-%m-%d"), author, upside, tier])
+
+        writer.writerow([ticker, report_date.strftime("%Y-%m-%d"), author, upside, tier, rating_type])
 
 def run_pipeline(sector_url):
     sector_name = extract_sector_name(sector_url)
@@ -112,7 +116,7 @@ def run_pipeline(sector_url):
 
     with open(reports_csv, "w", newline="", encoding="utf-8") as output_file:
         writer = csv.writer(output_file)
-        writer.writerow(["Company", "Date", "Author", "Upside (%)", "Tier"])
+        writer.writerow(["Company", "Date", "Author", "Upside (%)", "Tier", "Type"])
 
         for company in company_list:
             base_url = company["URL"]
