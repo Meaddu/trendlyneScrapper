@@ -1,42 +1,54 @@
-# scrapeBankingCompaniesTrendlyne
+# trendlyneScraper.py
 
 import csv
 import time
+import sys
+from urllib.parse import urlparse
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import Select
 from bs4 import BeautifulSoup
 
-BASE_URL = "https://trendlyne.com"
-SECTOR_URL = f"{BASE_URL}/equity/sector/21/banking-and-finance/"
-CSV_FILENAME = "banking_companies.csv"
+def extract_sector_id(url):
+    """Extract sector name or ID from the URL for naming output file"""
+    path_parts = urlparse(url).path.strip("/").split("/")
+    return path_parts[-1] if path_parts else "sector"
 
-# Set up headless browser
-options = Options()
-options.add_argument("--headless")
-driver = webdriver.Chrome(options=options)
-driver.get(SECTOR_URL)
+def scrape_sector_companies(sector_url):
+    sector_name = extract_sector_id(sector_url)
+    output_file = f"{sector_name}_companies.csv"
 
-# Allow page to load and select 'All'
-time.sleep(3)
-dropdown = Select(driver.find_element("name", "DataTables_Table_1_length"))
-dropdown.select_by_visible_text("All")
+    options = Options()
+    options.add_argument("--headless")
+    driver = webdriver.Chrome(options=options)
+    driver.get(sector_url)
 
-# Wait for full table to render
-time.sleep(5)
+    # Wait for dropdown and switch to "All"
+    time.sleep(3)
+    dropdown = Select(driver.find_element("name", "DataTables_Table_1_length"))
+    dropdown.select_by_visible_text("All")
 
-# Parse the page
-soup = BeautifulSoup(driver.page_source, "html.parser")
-rows = soup.select("td.fs09rem.w-table-first a.stockrow")
+    time.sleep(5)  # Wait for all companies to render
 
-# Write to CSV
-with open(CSV_FILENAME, "w", newline="", encoding="utf-8") as file:
-    writer = csv.writer(file)
-    writer.writerow(["Company Name", "URL"])
-    for link in rows:
-        name = link.text.strip()
-        url = BASE_URL + link["href"]
-        writer.writerow([name, url])
+    soup = BeautifulSoup(driver.page_source, "html.parser")
+    rows = soup.select("td.fs09rem.w-table-first a.stockrow")
 
-driver.quit()
-print(f"Scraping completed. Data saved to {CSV_FILENAME}")
+    with open(output_file, "w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow(["Company Name", "URL"])
+        for link in rows:
+            name = link.text.strip()
+            url = "https://trendlyne.com" + link["href"]
+            writer.writerow([name, url])
+
+    driver.quit()
+    print(f"Scraped {len(rows)} companies. Data saved to {output_file}")
+
+# Accept input
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python trendlyneScraper.py <sector_url>")
+        sys.exit(1)
+    
+    sector_url = sys.argv[1]
+    scrape_sector_companies(sector_url)
