@@ -87,8 +87,12 @@ def scrape_company_reports(driver, report_url, writer):
         author = author_tag.text.strip() if author_tag else ""
 
         upside = cells[7].text.strip()
-        if upside.lower() == "target met":
-            continue  # Skip "Target met" rows
+
+        # Skip non-numeric upside values
+        try:
+            float(upside)
+        except ValueError:
+            continue
 
         # Extract type (Buy/Sell/Hold/etc.)
         type_span = cells[8].select_one("span.fs085rem")
