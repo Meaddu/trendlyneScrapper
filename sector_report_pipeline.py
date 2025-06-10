@@ -1,6 +1,6 @@
 # sector_report_pipeline.py
 
-import csv, os, sys
+import csv, os, sys, glob
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from trendlyne.scraper import scrape_sector_companies
@@ -17,6 +17,32 @@ def setup_driver():
 
 def get_sector_slug(sector_url):
     return sector_url.rstrip("/").split("/")[-1]
+
+def combine_all_sector_reports(data_dir="data", output_file="data/all_sectors_combined.csv"):
+    fieldnames = ["Company", "Date", "Author", "Upside (%)", "Tier", "Type", "Sector"]
+    combined_rows = []
+
+    for file in glob.glob(f"{data_dir}/*_sector_reports.csv"):
+        with open(file, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                combined_rows.append([
+                    row["Company"],
+                    row["Date"],
+                    row["Author"],
+                    row["Upside (%)"],
+                    row["Tier"],
+                    row["Type"],
+                    row["Sector"]
+                ])
+
+    # Write combined file
+    with open(output_file, "w", newline="", encoding="utf-8") as out:
+        writer = csv.writer(out)
+        writer.writerow(fieldnames)
+        writer.writerows(combined_rows)
+
+    print(f"Combined file updated: {output_file} ({len(combined_rows)} rows)")
 
 def run_pipeline(sector_url):
     slug = get_sector_slug(sector_url)
@@ -45,7 +71,9 @@ def run_pipeline(sector_url):
                 print(f"Error: {e}")
 
     driver.quit()
-    print(f"Report written to {reports_csv}")
+
+    # Combine all sector reports
+    combine_all_sector_reports()
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
