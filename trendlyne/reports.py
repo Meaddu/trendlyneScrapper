@@ -13,7 +13,10 @@ def extract_ticker(url):
 def convert_to_reports_url(company_url):
     return company_url.replace("/equity/", "/research-reports/stock/")
 
-def scrape_company_reports(driver, report_url, writer):
+def slug_to_title(slug):
+    return slug.replace("-", " ").title()
+
+def scrape_company_reports(driver, report_url, writer, sector_name):
     ticker = extract_ticker(report_url)
     driver.get(report_url)
     time.sleep(5)
@@ -49,4 +52,12 @@ def scrape_company_reports(driver, report_url, writer):
 
         tier = "Tier 1" if any(b.lower() in author.lower() for b in TIER_1_BROKERS) else "Tier 2"
 
-        writer.writerow([ticker, report_date.strftime("%Y-%m-%d"), author, upside, tier, rating_type])
+        writer.writerow([
+            ticker,
+            report_date.strftime("%Y-%m-%d"),
+            author,
+            upside,
+            tier,
+            rating_type,
+            sector_name
+        ])

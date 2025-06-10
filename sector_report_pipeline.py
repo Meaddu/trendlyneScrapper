@@ -4,7 +4,11 @@ import csv, os, sys
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from trendlyne.scraper import scrape_sector_companies
-from trendlyne.reports import scrape_company_reports, convert_to_reports_url
+from trendlyne.reports import (
+    scrape_company_reports,
+    convert_to_reports_url,
+    slug_to_title,
+)
 
 def setup_driver():
     options = Options()
@@ -16,6 +20,8 @@ def get_sector_slug(sector_url):
 
 def run_pipeline(sector_url):
     slug = get_sector_slug(sector_url)
+    sector_name_readable = slug_to_title(slug)
+
     os.makedirs("data", exist_ok=True)
     companies_csv = f"data/{slug}_companies.csv"
     reports_csv = f"data/{slug}_sector_reports.csv"
@@ -28,13 +34,13 @@ def run_pipeline(sector_url):
 
     with open(reports_csv, "w", newline="", encoding="utf-8") as out:
         writer = csv.writer(out)
-        writer.writerow(["Company", "Date", "Author", "Upside (%)", "Tier", "Type"])
+        writer.writerow(["Company", "Date", "Author", "Upside (%)", "Tier", "Type", "Sector"])
 
         for company in companies:
             report_url = convert_to_reports_url(company["URL"])
             print(f"Fetching reports for {report_url}")
             try:
-                scrape_company_reports(driver, report_url, writer)
+                scrape_company_reports(driver, report_url, writer, sector_name_readable)
             except Exception as e:
                 print(f"Error: {e}")
 
